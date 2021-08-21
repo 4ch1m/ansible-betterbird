@@ -1,0 +1,81 @@
+- name: Betterbird - Linux build
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  vars:
+    repo:
+      mozilla_central: https://hg.mozilla.org/releases/mozilla-esr91/
+      comm_central: https://hg.mozilla.org/releases/comm-esr91/
+      betterbird_patches: https://github.com/Betterbird/thunderbird-patches.git
+    betterbird_patches:
+      root_dir: "{{ playbook_dir }}/betterbird-patches"
+      release_dir: "91"
+
+  tasks:
+    - name: check for 64-bit linux
+      shell:
+        cmd: "uname -m"
+      register: check_64bit
+      changed_when: false
+      failed_when: check_64bit.stdout != "x86_64"
+
+    - name: install packages
+      become: yes
+      package:
+        state: present
+        name:
+          - mercurial
+          - python3
+
+    - name: clone repos
+      include_tasks: tasks/clone_repos.yml
+
+    - name: prepare hg directories
+      include_tasks: tasks/prepare_hg_dir.yml
+      loop:
+        - "{{ playbook_dir }}/source/.hg"
+        - "{{ playbook_dir }}/source/comm/.hg"
+
+    - name: bootstrap
+      shell:
+        chdir: "{{ playbook_dir }}/source"
+        cmd: >
+          ./mach
+          --no-interactive
+          bootstrap
+          --application-choice "Firefox for Desktop"
+
+    - name: mozconfig setup
+      lineinfile:
+        path: "{{ playbook_dir }}/source/mozconfig"
+        create: yes
+        line: "{{ item }}"
+      loop:
+        - "ac_add_options --enable-application=comm/mail"
+        - "ac_add_options --enable-official-branding"
+        #
+        - "ac_add_options --with-branding=comm/mail/branding/betterbird"
+        #
+        - "ac_add_options --disable-updater"
+        - "ac_add_options --disable-crashreporter"
+        - "ac_add_options --disable-maintenance-service"
+        #
+        - "MOZ_REQUIRE_SIGNING="
+        - "MOZ_REQUIRE_ADDON_SIGNING=0"
+        #
+        - "export MOZILLA_OFFICIAL=1"
+        - "export MOZ_TELEMETRY_REPORTING="
+
+    - name: apply patches
+      include_tasks: tasks/apply_patches.yml
+
+    - name: build
+      shell:
+        chdir: "{{ playbook_dir }}/source"
+        cmd: ./mach build
+
+    - name: package
+      shell:
+        chdir: "{{ playbook_dir }}/source"
+        cmd: ./mach package
