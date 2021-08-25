@@ -6,54 +6,54 @@
   changed_when: false
   register: betterbird_patch_files
 
-### mozilla-central ...
+### mozilla ...
 
-- name: mozilla-central | copy series file
+- name: mozilla | copy series file
   copy:
     src: "{{ betterbird_patches.root_dir }}/{{ betterbird_patches.release_dir }}/series-M-C"
     dest: "{{ playbook_dir }}/source/.hg/patches/series"
 
-- name: mozilla-central | copy betterbird patch files
+- name: mozilla | copy betterbird patch files
   copy:
     src: "{{ item.path }}"
     dest: "{{ playbook_dir }}/source/.hg/patches/{{ item.path | basename }}"
   when: "'-m-c.patch' in item.path"
   loop: "{{ betterbird_patch_files.files }}"
 
-- name: mozilla-central | download additional patch files
+- name: mozilla | download additional patch files
   get_url:
     url: "{{ item | regex_search('http.*') | replace('/rev/','/raw-rev/') }}"
     dest: "{{ playbook_dir }}/source/.hg/patches/{{ item | regex_search('.*#') | replace('#','') | trim }}"
   when: "'http' in item"
   loop: "{{ lookup('file', playbook_dir + '/source/.hg/patches/series').split('\n') }}"
 
-- name: mozilla-central | apply all patch files
+- name: mozilla | apply all patch files
   shell:
     chdir: "{{ playbook_dir }}/source/.hg/patches"
     cmd: hg qpush -a
 
-### comm-central ...
+### comm ...
 
-- name: comm-central | copy series file
+- name: comm | copy series file
   copy:
     src: "{{ betterbird_patches.root_dir }}/{{ betterbird_patches.release_dir }}/series"
     dest: "{{ playbook_dir }}/source/comm/.hg/patches/series"
 
-- name: comm-central | copy betterbird patch files
+- name: comm | copy betterbird patch files
   copy:
     src: "{{ item.path }}"
     dest: "{{ playbook_dir }}/source/comm/.hg/patches/{{ item.path | basename }}"
   when: "not ('-m-c.patch' in item.path)"
   loop: "{{ betterbird_patch_files.files }}"
 
-- name: comm-central | download additional patches
+- name: comm | download additional patches
   get_url:
     url: "{{ item | regex_search('http.*') | replace('/rev/','/raw-rev/') }}"
     dest: "{{ playbook_dir }}/source/comm/.hg/patches/{{ item | regex_search('.*#') | replace('#','') | trim }}"
   when: "'http' in item"
   loop: "{{ lookup('file', playbook_dir + '/source/comm/.hg/patches/series').split('\n') }}"
 
-- name: comm-central | apply all patch files
+- name: comm | apply all patch files
   shell:
     chdir: "{{ playbook_dir }}/source/comm/.hg/patches"
     cmd: hg qpush -a

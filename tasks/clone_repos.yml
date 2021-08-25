@@ -1,19 +1,19 @@
-- name: clone mozilla-central
+- name: clone mozilla
   community.general.hg:
-    repo: "{{ repo.mozilla_central }}"
+    repo: "{{ repo.mozilla }}"
     dest: "{{ playbook_dir }}/source"
     force: yes
     purge: yes
 
-- name: clone comm-central
+- name: clone comm
   community.general.hg:
-    repo: "{{ repo.comm_central }}"
+    repo: "{{ repo.comm }}"
     dest: "{{ playbook_dir }}/source/comm"
     force: yes
     purge: yes
 
-- name: clone betterbird patches
+- name: clone betterbird
   git:
-    repo: "{{ repo.betterbird_patches }}"
+    repo: "{{ repo.betterbird }}"
     dest: "{{ betterbird_patches.root_dir }}"
     depth: 1

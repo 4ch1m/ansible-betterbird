@@ -1,7 +1,13 @@
-- name: create patch directory
-  file:
-    path: "{{ item }}/patches"
-    state: directory
+- name: initialize patches directory
+  block:
+    - name: delete patches directory
+      file:
+        path: "{{ item }}/patches"
+        state: absent
+    - name: create patches directory
+      file:
+        path: "{{ item }}/patches"
+        state: directory
 
 - name: create "[extensions]" section in hgrc
   lineinfile:
