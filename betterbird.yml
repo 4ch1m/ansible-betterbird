@@ -59,7 +59,6 @@
         #
         - "ac_add_options --disable-updater"
         - "ac_add_options --disable-crashreporter"
-        - "ac_add_options --disable-maintenance-service"
         #
         - "MOZ_REQUIRE_SIGNING="
         - "MOZ_REQUIRE_ADDON_SIGNING=0"
