@@ -1,19 +1,47 @@
-- name: clone mozilla
-  community.general.hg:
-    repo: "{{ repo.mozilla }}"
-    dest: "{{ playbook_dir }}/source"
-    force: yes
-    purge: yes
-
-- name: clone comm
-  community.general.hg:
-    repo: "{{ repo.comm }}"
-    dest: "{{ playbook_dir }}/source/comm"
-    force: yes
-    purge: yes
-
-- name: clone betterbird
+- name: clone repos | betterbird - clone
   git:
-    repo: "{{ repo.betterbird }}"
-    dest: "{{ betterbird_patches.root_dir }}"
+    repo: "{{ betterbird_patches.repository }}"
+    dest: "{{ betterbird_patches.directory }}"
     depth: 1
+
+- name: clone repos | betterbird - include releases.yml
+  include_vars:
+    file: "{{ betterbird_patches.directory }}/releases.yml"
+
+# ----------------------------------------------------------------------------------------------------------------------
+
+- name: clone repos | mozilla - check directory
+  stat:
+    path: "{{ playbook_dir }}/source"
+  changed_when: false
+  register: mozilla_directory
+
+- name: clone repos | mozilla - clone
+  shell:
+    chdir: "{{ playbook_dir }}"
+    cmd: "hg clone {{ current_release.repos.mozilla.url }} source/"
+  when: not mozilla_directory.stat.exists
+
+- name: clone repos | mozilla - set revision
+  shell:
+    chdir: "{{ playbook_dir }}/source"
+    cmd: "hg update -C -r {{ current_release.repos.mozilla.revision }}"
+
+# ----------------------------------------------------------------------------------------------------------------------
+
+- name: clone repos | comm - check directory
+  stat:
+    path: "{{ playbook_dir }}/source/comm"
+  changed_when: false
+  register: comm_directory
+
+- name: clone repos | comm - clone
+  shell:
+    chdir: "{{ playbook_dir }}/source"
+    cmd: "hg clone {{ current_release.repos.comm.url }} comm/"
+  when: not comm_directory.stat.exists
+
+- name: clone repos | comm - set revision
+  shell:
+    chdir: "{{ playbook_dir }}/source/comm"
+    cmd: "hg update -C -r {{ current_release.repos.comm.revision }}"

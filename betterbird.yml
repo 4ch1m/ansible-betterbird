@@ -4,13 +4,9 @@
   gather_facts: no
 
   vars:
-    repo:
-      mozilla: https://hg.mozilla.org/releases/mozilla-esr91/
-      comm: https://hg.mozilla.org/releases/comm-esr91/
-      betterbird: https://github.com/Betterbird/thunderbird-patches.git
     betterbird_patches:
-      root_dir: "{{ playbook_dir }}/betterbird-patches"
-      release_dir: "91"
+      repository: https://github.com/Betterbird/thunderbird-patches.git
+      directory: "{{ playbook_dir }}/betterbird-patches"
 
   tasks:
     - name: check for 64-bit linux
@@ -38,6 +34,17 @@
         - "{{ playbook_dir }}/source/.hg"
         - "{{ playbook_dir }}/source/comm/.hg"
 
+    - name: purge repos
+      shell:
+        chdir: "{{ item }}"
+        cmd: hg purge
+      loop:
+        - "{{ playbook_dir }}/source"
+        - "{{ playbook_dir }}/source/comm"
+
+    - name: apply patches
+      include_tasks: tasks/apply_patches.yml
+
     - name: bootstrap
       shell:
         chdir: "{{ playbook_dir }}/source"
@@ -48,10 +55,24 @@
           --application-choice "Firefox for Desktop"
 
     - name: mozconfig setup
-      include_tasks: tasks/mozconfig_setup.yml
-
-    - name: apply patches
-      include_tasks: tasks/apply_patches.yml
+      lineinfile:
+        path: "{{ playbook_dir }}/source/mozconfig"
+        create: yes
+        line: "{{ item }}"
+      loop:
+        - "ac_add_options --enable-application=comm/mail"
+        - "ac_add_options --enable-official-branding"
+        #
+        - "ac_add_options --with-branding=comm/mail/branding/betterbird"
+        #
+        - "ac_add_options --disable-updater"
+        - "ac_add_options --disable-crashreporter"
+        #
+        - "MOZ_REQUIRE_SIGNING="
+        - "MOZ_REQUIRE_ADDON_SIGNING=0"
+        #
+        - "export MOZILLA_OFFICIAL=1"
+        - "export MOZ_TELEMETRY_REPORTING="
 
     - name: build
       shell:

@@ -1,59 +1,59 @@
-- name: find all betterbird patch files
+- name: apply patches | betterbird - find all patch files
   find:
-    paths: "{{ betterbird_patches.root_dir }}/{{ betterbird_patches.release_dir }}"
+    paths: "{{ betterbird_patches.directory }}/{{ current_release.directory }}"
     patterns: "*.patch"
     recurse: yes
   changed_when: false
   register: betterbird_patch_files
 
-### mozilla ...
+# ----------------------------------------------------------------------------------------------------------------------
 
-- name: mozilla | copy series file
+- name: apply patches | mozilla - copy series file
   copy:
-    src: "{{ betterbird_patches.root_dir }}/{{ betterbird_patches.release_dir }}/series-M-C"
+    src: "{{ betterbird_patches.directory }}/{{ current_release.directory }}/series-M-C"
     dest: "{{ playbook_dir }}/source/.hg/patches/series"
 
-- name: mozilla | copy betterbird patch files
+- name: apply patches | mozilla - copy betterbird patch files
   copy:
     src: "{{ item.path }}"
     dest: "{{ playbook_dir }}/source/.hg/patches/{{ item.path | basename }}"
   when: "'-m-c.patch' in item.path"
   loop: "{{ betterbird_patch_files.files }}"
 
-- name: mozilla | download additional patch files
+- name: apply patches | mozilla - download additional patch files
   get_url:
     url: "{{ item | regex_search('http.*') | replace('/rev/','/raw-rev/') }}"
     dest: "{{ playbook_dir }}/source/.hg/patches/{{ item | regex_search('.*#') | replace('#','') | trim }}"
   when: "'http' in item"
   loop: "{{ lookup('file', playbook_dir + '/source/.hg/patches/series').split('\n') }}"
 
-- name: mozilla | apply all patch files
+- name: apply patches | mozilla - apply all patch files
   shell:
     chdir: "{{ playbook_dir }}/source/.hg/patches"
     cmd: hg qpush -a
 
-### comm ...
+# ----------------------------------------------------------------------------------------------------------------------
 
-- name: comm | copy series file
+- name: apply patches | comm - copy series file
   copy:
-    src: "{{ betterbird_patches.root_dir }}/{{ betterbird_patches.release_dir }}/series"
+    src: "{{ betterbird_patches.directory }}/{{ current_release.directory }}/series"
     dest: "{{ playbook_dir }}/source/comm/.hg/patches/series"
 
-- name: comm | copy betterbird patch files
+- name: apply patches | comm - copy betterbird patch files
   copy:
     src: "{{ item.path }}"
     dest: "{{ playbook_dir }}/source/comm/.hg/patches/{{ item.path | basename }}"
   when: "not ('-m-c.patch' in item.path)"
   loop: "{{ betterbird_patch_files.files }}"
 
-- name: comm | download additional patches
+- name: apply patches | comm - download additional patches
   get_url:
     url: "{{ item | regex_search('http.*') | replace('/rev/','/raw-rev/') }}"
     dest: "{{ playbook_dir }}/source/comm/.hg/patches/{{ item | regex_search('.*#') | replace('#','') | trim }}"
   when: "'http' in item"
   loop: "{{ lookup('file', playbook_dir + '/source/comm/.hg/patches/series').split('\n') }}"
 
-- name: comm | apply all patch files
+- name: apply patches | comm - apply all patch files
   shell:
     chdir: "{{ playbook_dir }}/source/comm/.hg/patches"
     cmd: hg qpush -a
