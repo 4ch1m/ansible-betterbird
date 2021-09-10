@@ -2,6 +2,7 @@
   git:
     repo: "{{ betterbird_patches.repository }}"
     dest: "{{ betterbird_patches.directory }}"
+    force: yes
     depth: 1
 
 - name: clone repos | betterbird - include releases.yml
