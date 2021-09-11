@@ -11,12 +11,12 @@
   tasks:
     - name: check for 64-bit linux
       shell:
-        cmd: "uname -m"
+        cmd: uname -m
       register: check_64bit
       changed_when: false
       failed_when: check_64bit.stdout != "x86_64"
 
-    - name: install packages
+    - name: install necessary packages
       become: yes
       package:
         state: present
@@ -25,22 +25,28 @@
           - python3
           - python3-pip
 
-    - name: clone repos
-      include_tasks: tasks/clone_repos.yml
+    - name: clone betterbird repo
+      git:
+        repo: "{{ betterbird_patches.repository }}"
+        dest: "{{ betterbird_patches.directory }}"
+        force: yes
+        depth: 1
 
-    - name: prepare hg directories
-      include_tasks: tasks/prepare_hg_dir.yml
-      loop:
-        - "{{ playbook_dir }}/source/.hg"
-        - "{{ playbook_dir }}/source/comm/.hg"
+    - name: include releases.yml
+      include_vars:
+        file: "{{ betterbird_patches.directory }}/releases.yml"
 
-    - name: purge repos
-      shell:
-        chdir: "{{ item }}"
-        cmd: hg purge
+    - name: clone base repos
+      include_tasks: tasks/clone_base_repo.yml
       loop:
-        - "{{ playbook_dir }}/source"
-        - "{{ playbook_dir }}/source/comm"
+        - { directory: "source",
+            url: "{{ current_release.repos.mozilla.url }}",
+            revision: "{{ current_release.repos.mozilla.revision }}" }
+        - { directory: "source/comm",
+            url: "{{ current_release.repos.comm.url }}",
+            revision: "{{ current_release.repos.comm.revision }}" }
+      loop_control:
+        loop_var: base_repo
 
     - name: apply patches
       include_tasks: tasks/apply_patches.yml
@@ -67,6 +73,9 @@
         #
         - "ac_add_options --disable-updater"
         - "ac_add_options --disable-crashreporter"
+        - "ac_add_options --disable-tests"
+        #
+        - "mk_add_options AUTOCLOBBER=1"
         #
         - "MOZ_REQUIRE_SIGNING="
         - "MOZ_REQUIRE_ADDON_SIGNING=0"

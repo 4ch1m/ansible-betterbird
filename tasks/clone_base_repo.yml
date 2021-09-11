@@ -1,0 +1,41 @@
+- name: clone base repo | check target directory
+  stat:
+    path: "{{ playbook_dir }}/{{ base_repo.directory }}"
+  changed_when: false
+  register: repo_target_directory
+
+- name: clone base repo | check .hg directory
+  stat:
+    path: "{{ playbook_dir }}/{{ base_repo.directory }}/.hg"
+  changed_when: false
+  register: repo_hg_directory
+
+- name: clone base repo | clean, purge, strip
+  shell:
+    chdir: "{{ playbook_dir }}/{{ base_repo.directory }}"
+    cmd: hg update --clean && hg purge && hg strip 'roots(outgoing())'
+  when:
+    - repo_target_directory.stat.exists
+    - repo_hg_directory.stat.exists
+
+- name: clone base repo | clone
+  shell:
+    chdir: "{{ playbook_dir }}"
+    cmd: "hg clone {{ base_repo.url }} {{ base_repo.directory }}/"
+  when: not repo_target_directory.stat.exists
+
+- name: clone base repo | prepare .hg dir
+  include_tasks: tasks/prepare_hg_dir.yml
+  vars:
+    hg_dir: "{{ playbook_dir }}/{{ base_repo.directory }}/.hg"
+
+- name: clone base repo | pull
+  shell:
+    chdir: "{{ playbook_dir }}/{{ base_repo.directory }}"
+    cmd: "hg pull"
+  when: repo_target_directory.stat.exists
+
+- name: clone base repo | set revision
+  shell:
+    chdir: "{{ playbook_dir }}/{{ base_repo.directory }}"
+    cmd: "hg update --rev {{ base_repo.revision }}"

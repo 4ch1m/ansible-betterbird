@@ -1,17 +1,16 @@
-- name: prepare hg dir | initialize patches directory
-  block:
-    - name: prepare hg dir | delete patches directory
-      file:
-        path: "{{ item }}/patches"
-        state: absent
-    - name: prepare hg dir | create patches directory
-      file:
-        path: "{{ item }}/patches"
-        state: directory
+- name: prepare hg dir | create patches directory
+  file:
+    path: "{{ hg_dir }}/patches"
+    state: directory
+
+- name: prepare hg dir | clear patch status file
+  shell:
+    chdir: "{{ hg_dir }}/patches"
+    cmd: ": > status"
 
 - name: prepare hg dir | create "[extensions]" section in hgrc
   lineinfile:
-    path: "{{ item }}/hgrc"
+    path: "{{ hg_dir }}/hgrc"
     create: yes
     regexp: "^\\[extensions\\]"
     insertafter: EOF
@@ -19,7 +18,7 @@
 
 - name: prepare hg dir | enable extensions
   lineinfile:
-    path: "{{ item }}/hgrc"
+    path: "{{ hg_dir }}/hgrc"
     regexp: "^{{ extension }} ="
     insertafter: "\\[extensions\\]"
     line: "{{ extension }} ="
