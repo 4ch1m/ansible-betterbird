@@ -7,7 +7,7 @@
   copy:
     src: "{{ betterbird_patch_file.path }}"
     dest: "{{ item.patches_directory }}/{{ betterbird_patch_file.path | basename }}"
-  when: "{{ item.patch_file_filter }} in betterbird_patch_file"
+  when: "{{ item.patch_file_filter }} in betterbird_patch_file.path"
   loop: "{{ betterbird_patch_files.files }}"
   loop_control:
     loop_var: betterbird_patch_file
