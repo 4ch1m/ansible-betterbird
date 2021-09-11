@@ -48,8 +48,23 @@
       loop_control:
         loop_var: base_repo
 
+    - name: find all patch files
+      find:
+        paths: "{{ betterbird_patches.directory }}/{{ current_release.directory }}"
+        patterns: "*.patch"
+        recurse: yes
+      changed_when: false
+      register: betterbird_patch_files
+
     - name: apply patches
       include_tasks: tasks/apply_patches.yml
+      loop:
+        - { patches_directory: "{{ playbook_dir }}/source/.hg/patches",
+            series_file: "{{ betterbird_patches.directory }}/{{ current_release.directory }}/series-M-C",
+            patch_file_filter: "'-m-c.patch'" }
+        - { patches_directory: "{{ playbook_dir }}/source/comm/.hg/patches",
+            series_file: "{{ betterbird_patches.directory }}/{{ current_release.directory }}/series",
+            patch_file_filter: "not '-m-c.patch'" }
 
     - name: bootstrap
       shell:
