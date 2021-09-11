@@ -13,7 +13,10 @@
 - name: clone base repo | clean, purge, strip
   shell:
     chdir: "{{ playbook_dir }}/{{ base_repo.directory }}"
-    cmd: hg update --clean && hg purge && hg strip 'roots(outgoing())'
+    cmd: >-
+      hg update --clean &&
+      hg purge &&
+      hg strip 'roots(outgoing())'
   when:
     - repo_target_directory.stat.exists
     - repo_hg_directory.stat.exists
