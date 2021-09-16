@@ -107,3 +107,24 @@
       shell:
         chdir: "{{ playbook_dir }}/source"
         cmd: ./mach package
+
+    - name: find tarballs
+      find:
+        paths: "{{ playbook_dir }}/source/obj-x86_64-pc-linux-gnu/dist"
+        use_regex: yes
+        patterns: "^betterbird-.*.tar.bz2$"
+      register: tarballs
+
+    - set_fact:
+        latest_tarball: "{{ (tarballs.files | sort(attribute='ctime') | map(attribute='path') | reverse | list)[0] | basename }}"
+
+    - name: success message
+      debug:
+        msg:
+          - "┌──────────────────────┐"
+          - "│                      │"
+          - "│   BUILD SUCCESSFUL   │"
+          - "│                      │"
+          - "├──────────────────────┴─────────────────────────────────{{ latest_tarball | regex_replace('.', '─') }}┐"
+          - "│ latest package: ./source/obj-x86_64-pc-linux-gnu/dist/{{ latest_tarball }} │"
+          - "└────────────────────────────────────────────────────────{{ latest_tarball | regex_replace('.', '─') }}┘"
