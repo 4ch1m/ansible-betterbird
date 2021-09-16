@@ -21,6 +21,7 @@
       package:
         state: present
         name:
+          - git
           - mercurial
           - python3
           - python3-pip

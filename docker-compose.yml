@@ -1,0 +1,9 @@
+version: "3.3"
+
+services:
+
+  debian:
+    image: debian
+    volumes:
+      - .:/ansible-betterbird
+    entrypoint: bash -c "apt-get update && apt-get install -y ansible && cd /ansible-betterbird && ansible-playbook betterbird.yml"
