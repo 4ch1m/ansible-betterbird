@@ -98,6 +98,9 @@
         - "export MOZ_TELEMETRY_REPORTING="
         - "export MOZ_NO_PIE_COMPAT=1"
 
+    - name: extra config
+      include_tasks: tasks/extra_config.yml
+
     - name: build
       shell:
         chdir: "{{ playbook_dir }}/source"
