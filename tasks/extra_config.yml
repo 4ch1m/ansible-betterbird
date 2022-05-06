@@ -1,6 +1,6 @@
 - name: extra config | rustup override
   shell:
-    cmd: "$HOME/.cargo/bin/rustup override set {{ rustup_override }}"
+    cmd: "$HOME/.cargo/bin/rustup override set {{ current_release.extra_config.rustup_override }}"
   when: current_release.extra_config.rustup_override is defined
 
 # add more extra configs here ...
