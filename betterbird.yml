@@ -100,6 +100,7 @@
 
     - name: extra config
       include_tasks: tasks/extra_config.yml
+      when: current_release.extra_config is defined
 
     - name: build
       shell:

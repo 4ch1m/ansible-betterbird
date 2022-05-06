@@ -1,9 +1,6 @@
-- name: extra config | include extra_config_vars.yml
-  include_vars:
-    file: "{{ playbook_dir }}/extra_config_vars.yml"
-  failed_when: false
-
 - name: extra config | rustup override
   shell:
     cmd: "$HOME/.cargo/bin/rustup override set {{ rustup_override }}"
-  when: rustup_override is defined
+  when: current_release.extra_config.rustup_override is defined
+
+# add more extra configs here ...
