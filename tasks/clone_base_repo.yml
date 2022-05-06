@@ -20,7 +20,6 @@
   when:
     - repo_target_directory.stat.exists
     - repo_hg_directory.stat.exists
-  failed_when: false # NOTE: may fail/abort in case of 'empty revision set'
 
 - name: clone base repo | clone
   shell:
