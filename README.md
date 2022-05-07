@@ -1,11 +1,13 @@
+# DISCONTINUED
+
+---
+
 # ansible-betterbird
 > A fully automated build script for [Betterbird](https://www.betterbird.eu/) using Ansible.
 
 ## Disclaimer
 
 Neither this repository, nor the author of it is part of the official [Betterbird](https://www.betterbird.eu/) project.
-
-If you value this work, consider a donation by using the funding link on this page. Thanks.
 
 ## Usage
 
